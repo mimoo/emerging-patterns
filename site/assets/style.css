@@ -11,3 +11,5 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
 @media print{.sidebar,.topbar,.mobile-bar,.toc,.footer,.chapter-pagination,.copy-code{display:none!important}.page{margin:0;padding:0}.chapter-main{padding:0}.chapter-layout{display:block}.prose,.article-deck{color:#000}.code-block{break-inside:avoid}body{background:#fff}.search-dialog{display:none}}
 @media(max-width:720px){.sidebar{visibility:hidden}.menu-open .sidebar{visibility:visible}}
+
+.book-intro{max-width:760px;margin-bottom:32px}
