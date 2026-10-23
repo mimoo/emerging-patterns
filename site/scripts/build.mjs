@@ -1,0 +1,48 @@
+import { mkdir, writeFile, cp, rm } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { patterns } from '../content/patterns.mjs';
+import { basePath } from './base-path.mjs';
+const root = fileURLToPath(new URL('../', import.meta.url));
+const dist = `${root}dist`;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const number = i => String(i + 1).padStart(2, '0');
+const minutes = p => Math.max(2, Math.ceil(p.sections.map(s => (s.html + (s.after || '')).replace(/<[^>]+>/g, ' ') + (s.code?.text || '')).join(' ').split(/\s+/).length / 190));
+const icon = '<span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>';
+function shell({title, description, body, pattern, index = -1, base: baseOverride}) {
+  const base = baseOverride || (pattern ? '../../' : './');
+  const link = p => `${base}patterns/${p.slug}/`;
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#f7f6f2"><meta name="description" content="${esc(description)}"><title>${esc(title)} · Emerging Patterns</title><link rel="icon" href="${base}assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="${base}assets/style.css"><script src="${base}assets/app.js" defer></script></head>
+<body data-base="${base}"><a class="skip-link" href="#main">Skip to content</a>
+<aside class="sidebar" id="sidebar"><a class="brand" href="${base}">${icon}<span>Emerging<br>Patterns<span class="brand-sub">A FIELD GUIDE</span></span></a>
+<button class="search-trigger" type="button"><span><span aria-hidden="true">⌕</span> Search the book</span><kbd>/</kbd></button>
+<nav aria-label="Book navigation"><a class="overview ${!pattern ? 'active' : ''}" href="${base}" ${!pattern ? 'aria-current="page"' : ''}><span aria-hidden="true">▤</span> Overview</a><p class="nav-label">THE PATTERNS <span>06</span></p>${patterns.map((p, i) => `<a class="chapter-link ${index === i ? 'active' : ''}" href="${link(p)}" ${index === i ? 'aria-current="page"' : ''}><span class="chapter-number">${number(i)}</span><span>${esc(p.shortTitle)}</span></a>`).join('')}</nav>
+<div class="sidebar-bottom"><span class="status-dot"></span> A work in progress<p>Observations from the frontier.<br>Useful today. Open to revision.</p><span class="edition">FIRST EDITION / 2026</span></div></aside>
+<div class="mobile-bar"><a href="${base}">${icon}<span>Emerging Patterns</span></a><button id="menu-toggle" aria-controls="sidebar" aria-expanded="false">Contents <span aria-hidden="true">☰</span></button></div><button class="menu-scrim" aria-label="Close navigation" hidden></button>
+<div class="page"><header class="topbar"><div><a href="${base}">The field guide</a><span class="breadcrumb-separator">/</span><span>${pattern ? `Pattern ${number(index)}` : 'Introduction'}</span></div><span class="draft-badge"><span class="status-dot"></span> Living draft <span class="version">v0.1</span></span></header>
+${body}<footer class="footer"><span>Emerging Patterns</span><span>A field guide to working with coding agents.</span><a href="#main">Back to top ↑</a></footer></div>
+<dialog class="search-dialog" aria-labelledby="search-title"><div class="search-heading"><label id="search-title" for="search-input">Search the field guide</label><button id="close-search" aria-label="Close search">Esc</button></div><input id="search-input" type="search" placeholder="Try “CLI”, “Lean”, or “instructions”…" autocomplete="off"><p id="search-count" aria-live="polite"></p><div id="search-results"></div></dialog>
+</body></html>`;
+}
+function overview() {
+  return shell({title:'A field guide to agentic engineering',description:'Six emerging patterns for working with agents in codebases. Practical ideas, concrete examples, and honest tradeoffs.',body:`<main id="main" class="overview-main"><section class="hero"><div class="hero-copy"><p class="eyebrow"><span class="orange-rule"></span> NOTES ON A CHANGING CRAFT</p><h1>New tools.<br>Emerging <em>patterns.</em></h1><p class="hero-description">A field guide to agentic engineering.<br>Practical ways to work with agents in codebases, collected as we figure them out.</p><a class="primary-link" href="./patterns/cli-first/">Start reading <span aria-hidden="true">↗</span></a><a class="text-link" href="#patterns">Explore the patterns <span aria-hidden="true">↓</span></a></div><div class="field-diagram" role="img" aria-label="A feedback loop: give context, let the agent act, observe the result, and verify."><span class="diagram-caption">FIG. 01 — THE WORKING LOOP</span><div class="diagram-orbit"></div><div class="diagram-core"><span>human</span><b>+</b><span>agent</span></div><span class="diagram-node node-top">01 / CONTEXT</span><span class="diagram-node node-right">02 / ACT</span><span class="diagram-node node-bottom">03 / OBSERVE</span><span class="diagram-node node-left">04 / VERIFY</span><span class="diagram-arrow arrow-one">↘</span><span class="diagram-arrow arrow-two">↖</span><span class="diagram-foot">BETTER LOOPS. BETTER OUTCOMES.</span></div></section>
+<section class="intro-note"><span class="small-asterisk" aria-hidden="true">✳</span><p><strong>A notebook, not a rulebook.</strong> These are working ideas, not settled best practices. Each pattern captures a useful approach, when to reach for it, and where it breaks down.</p></section>
+<section id="patterns" class="patterns-index"><div class="section-heading"><div><p class="eyebrow">THE COLLECTION</p><h2>Six patterns to start with.</h2></div><span class="index-count">01 — 06</span></div><div class="pattern-list">${patterns.map((p,i) => `<a class="pattern-row" href="./patterns/${p.slug}/"><span class="row-number">${number(i)}</span><span class="pattern-symbol" aria-hidden="true">${esc(p.symbol)}</span><span class="row-copy"><span class="row-title">${esc(p.shortTitle)}</span><span class="row-description">${esc(p.description)}</span><span class="row-reference">${esc(p.reference)}</span></span><span class="row-category">${esc(p.category)}</span><span class="row-arrow" aria-hidden="true">↗</span></a>`).join('')}</div></section>
+<section class="closing-note"><span class="eyebrow">THE THREAD THROUGH IT ALL</span><p>Make the work legible.<br>Make the feedback <em>useful.</em></p><span>Good tools, clear context, and a way to know what worked.</span></section></main>`});
+}
+function chapter(p,i) {
+  const prev = patterns[i-1], next = patterns[i+1];
+  return shell({title:p.shortTitle,description:p.description,pattern:p,index:i,body:`<main id="main" class="chapter-main"><div class="chapter-layout"><article><header class="article-header"><p class="eyebrow"><span class="orange-rule"></span> PATTERN ${number(i)} <span class="eyebrow-divider">/</span> ${esc(p.category).toUpperCase()}</p><h1>${esc(p.title)}</h1><p class="article-deck">${esc(p.description)}</p><div class="article-meta"><span>${minutes(p)} min read</span><span>Working draft</span><span>${esc(p.reference)}</span></div></header><div class="takeaway"><span class="eyebrow">IN ONE SENTENCE</span><p>${esc(p.takeaway)}</p></div><div class="prose">${p.sections.map(s => `<section id="${s.id}"><h2><a href="#${s.id}">${esc(s.title)}</a></h2>${s.html}${s.code ? `<div class="code-block"><div class="code-heading"><span>${esc(s.code.label)}</span><button class="copy-code" aria-label="Copy ${esc(s.code.label)}">Copy</button></div><pre><code>${esc(s.code.text)}</code></pre></div>` : ''}${s.after || ''}</section>`).join('')}${p.sources.length ? `<section id="further-reading"><h2>Further reading</h2><ul class="source-list">${p.sources.map(([title,url]) => `<li><a href="${url}">${esc(title)} <span aria-hidden="true">↗</span></a></li>`).join('')}</ul></section>` : ''}</div><nav class="chapter-pagination" aria-label="Adjacent chapters"><a href="${prev ? `../${prev.slug}/` : '../../'}"><span>← ${prev ? 'PREVIOUS PATTERN' : 'BACK TO'}</span><strong>${prev ? esc(prev.shortTitle) : 'Overview'}</strong></a><a class="next-chapter" href="${next ? `../${next.slug}/` : '../../'}"><span>${next ? 'NEXT PATTERN' : 'BACK TO'} →</span><strong>${next ? esc(next.shortTitle) : 'The collection'}</strong></a></nav></article><aside class="toc"><p class="eyebrow">IN THIS CHAPTER</p><nav aria-label="On this page">${p.sections.map(s => `<a href="#${s.id}">${esc(s.title)}</a>`).join('')}${p.sources.length ? '<a href="#further-reading">Further reading</a>' : ''}</nav><div class="toc-note"><span>${number(i)} <span class="muted">/ 06</span></span><p>One pattern in an<br>evolving practice.</p></div></aside></div></main>`});
+}
+await rm(dist, {recursive:true,force:true});
+await mkdir(dist, {recursive:true});
+await cp(`${root}assets`, `${dist}/assets`, {recursive:true});
+await writeFile(`${dist}/index.html`, overview());
+for (const [i,p] of patterns.entries()) {
+  await mkdir(`${dist}/patterns/${p.slug}`, {recursive:true});
+  await writeFile(`${dist}/patterns/${p.slug}/index.html`,chapter(p,i));
+}
+await writeFile(`${dist}/assets/search-index.json`, JSON.stringify(patterns.map(p => ({slug:p.slug,title:p.shortTitle,description:p.description,text:[p.title,p.reference,...p.sections.map(s => s.html + ' ' + (s.after || '') + ' ' + (s.code?.text || ''))].join(' ').replace(/<[^>]+>/g,' ')}))));
+await writeFile(`${dist}/404.html`,shell({title:'Page not found',description:'Find your way back to the field guide.',base:basePath,body:`<main id="main" class="overview-main"><h1>That page wandered off.</h1><p><a href="${basePath}">Return to the collection →</a></p></main>`}));
+await writeFile(`${dist}/.nojekyll`, '');
+console.log(`Built overview + ${patterns.length} chapters in ${dist}`);

@@ -1,0 +1,5 @@
+.DS_Store
+node_modules/
+site/dist/
+site/.openai/
+*-deploy.tar.gz
