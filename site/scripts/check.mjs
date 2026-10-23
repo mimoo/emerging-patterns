@@ -2,6 +2,7 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { basePath } from './base-path.mjs';
+import { patterns } from '../content/patterns.mjs';
 const root = path.resolve(fileURLToPath(new URL('../dist/', import.meta.url)));
 const origin = 'https://example.test';
 async function walk(dir) {
@@ -52,7 +53,9 @@ for (const file of htmlFiles) {
   }
 }
 const index = JSON.parse(await readFile(path.join(root, 'assets/search-index.json'), 'utf8'));
-if (index.length !== 6) throw new Error('Expected six searchable chapters');
+const expectedSlugs = patterns.map(p => p.slug).sort();
+if (new Set(expectedSlugs).size !== expectedSlugs.length) throw new Error('Duplicate chapter slugs');
+if (JSON.stringify(index.map(p => p.slug).sort()) !== JSON.stringify(expectedSlugs)) throw new Error('Search index does not match the chapter collection');
 for (const entry of index) await resolveLocal(new URL(`${basePath}patterns/${entry.slug}/`, origin));
 await stat(path.join(root, '.nojekyll'));
-console.log(`Verified ${htmlFiles.length} pages, ${checked} local references, 6 search entries, and nested 404 URLs under ${basePath}`);
+console.log(`Verified ${htmlFiles.length} pages, ${checked} local references, ${index.length} search entries, and nested 404 URLs under ${basePath}`);

@@ -1,6 +1,6 @@
 # Emerging Patterns
 
-A static, book-style field guide to working with coding agents. The proof of concept includes an overview and six individually addressable chapters, full-text chapter search, a responsive contents panel, section navigation, and copyable examples.
+A static, book-style field guide to working with coding agents. The proof of concept includes an overview and individually addressable pattern chapters, full-text chapter search, a responsive contents panel, section navigation, and copyable examples.
 
 ## Run locally
 

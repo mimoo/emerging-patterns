@@ -188,6 +188,63 @@ export const patterns = [
     ]
   },
   {
+    "slug": "fewer-comments",
+    "title": "Let the code do the talking",
+    "shortTitle": "Fewer comments, clearer code",
+    "category": "Context",
+    "symbol": "//",
+    "reference": "Names, types & tests",
+    "description": "Make code carry its own meaning, and keep comments for knowledge the code cannot express.",
+    "takeaway": "A comment should add information that reading the code would not give you.",
+    "sections": [
+      {
+        "id": "idea",
+        "title": "The idea",
+        "html": "<p>When an agent writes code, it can also produce a running commentary: what each function does, what the next line will do, and why the obvious implementation is obvious. That leaves two descriptions of the same behavior to maintain.</p><p>Start with fewer comments, or none when the code is already clear. Use precise names, explicit types, small functions, and tests that show the intended behavior. Let people and agents read the implementation directly instead of making them reconcile it with a prose translation.</p><p>This is a working hypothesis for collaborating with agents: redundant explanations create another place for context to go stale. The goal is a codebase that is easier to understand and change, not a particular comment count.</p>"
+      },
+      {
+        "id": "when",
+        "title": "When it helps",
+        "html": "<p>Reach for this when generated changes arrive with a comment above every step, or when comments describe behavior that the implementation no longer has. It matters especially when several agents touch the same area: one may change the code while another reasons from an old explanation.</p><p>It is also a useful review question. If a block needs a paragraph explaining what it does, could a better name, a clearer data structure, or a smaller function make that meaning visible?</p>"
+      },
+      {
+        "id": "practice",
+        "title": "Remove the narration",
+        "html": "<p>Delete comments that simply restate an operation. If a comment is compensating for an unclear name, fix the name first. Keep the change focused; an unnecessary abstraction can obscure more than a short comment.</p><p>In this example, the comments translate vague names into English. The code itself can carry that meaning.</p>",
+        "code": {
+          "label": "Before · comments compensate for unclear names",
+          "text": "// Check whether the user owns the project.\nconst ok = p.ownerId === u.id;\n\n// Only allow the owner to archive an active project.\nif (ok && p.status === 'active') {\n  archiveProject(p.id);\n}"
+        }
+      },
+      {
+        "id": "example",
+        "title": "Make meaning explicit",
+        "html": "<p>Use the vocabulary of the domain. The same behavior can be understood without the line-by-line explanation.</p>",
+        "code": {
+          "label": "After · names express the behavior",
+          "text": "const isProjectOwner = project.ownerId === user.id;\nconst isActiveProject = project.status === 'active';\n\nif (isProjectOwner && isActiveProject) {\n  archiveProject(project.id);\n}"
+        },
+        "after": "<p>Pair the implementation with tests for the rules that must survive later edits: an owner can archive an active project, and another user cannot. Tests give future collaborators something to check when they change the code.</p>"
+      },
+      {
+        "id": "edges",
+        "title": "Keep what the code cannot tell you",
+        "html": "<p>A blanket ban on comments would discard useful knowledge. Keep explanations of surprising constraints, rejected alternatives, external-system quirks, or why an apparently simpler change would be wrong. Put them beside the relevant code, and link to the decision or issue when that helps.</p>",
+        "code": {
+          "label": "A comment worth keeping · illustrative example",
+          "text": "// The legacy importer treats a missing archive date as active.\n// Keep the timestamp until that importer is retired.\nproject.archivedAt = now;"
+        },
+        "after": "<p>Preserve required license headers, public API documentation, and meaningful tool directives. Document a subtle algorithm when rewriting it would make it less clear. When behavior changes, review the nearby comments as part of the same change.</p><p>Do not move every deleted comment into a giant instruction file. Put shared workflow guidance in repository instructions; keep local rationale close to the implementation.</p>"
+      },
+      {
+        "id": "connections",
+        "title": "Connect the patterns",
+        "html": "<p>This extends <a href=\"../less-prompting/\">less prompt, more feedback</a> into the codebase: make every explanation earn its place. Use <a href=\"../repository-instructions/\">AGENTS.md</a> for how to work in the repository, <a href=\"../scenarios/\">SCENARIOS.md</a> for observable journeys, and focused comments for intent that would otherwise be lost.</p><aside class=\"note\"><strong>Try it on one change</strong><p>Review an agent-generated patch. Remove narration, improve unclear names, and preserve the reasons behind surprising code. Then check whether the next developer or agent can explain and modify it correctly.</p></aside>"
+      }
+    ],
+    "sources": []
+  },
+  {
     "slug": "formal-verification",
     "title": "Prove the parts that matter",
     "shortTitle": "A little formal verification",

@@ -10,7 +10,7 @@ function renderResults() {
   const terms = input.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const matches = searchIndex.filter(p => terms.every(term => `${p.title} ${p.description} ${p.text}`.toLowerCase().includes(term)));
   results.replaceChildren();
-  count.textContent = terms.length ? `${matches.length} ${matches.length === 1 ? 'pattern' : 'patterns'} found` : 'Explore all six patterns';
+  count.textContent = terms.length ? `${matches.length} ${matches.length === 1 ? 'pattern' : 'patterns'} found` : `Explore all ${searchIndex.length} patterns`;
   for (const p of matches) {
     const a = document.createElement('a');
     a.href = `${base}patterns/${p.slug}/`;
